@@ -1,0 +1,89 @@
+document.getElementById('paymentForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  
+  const cardNumber = document.getElementById('cardNumber').value;
+  const expiryDate = document.getElementById('expiryDate').value;
+  const cvv = document.getElementById('cvv').value;
+
+  // Perform client-side validation of card data (e.g., format, length, etc.)
+
+  // Call the backend to initiate the payment
+  const response = await fetch('/process-payment', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cardNumber, expiryDate, cvv }),
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    alert('Payment successful!');
+  } else {
+    alert('Payment failed. Please try again.');
+  }
+});
+Server-Side Code (Backend):
+Create a server-side endpoint to handle the payment request from the client.
+Use the PayGateway API to process the payment.
+javascript
+Copy code
+// Node.js and Express example
+const express = require('express');
+const app = express();
+const PayGateway = require('paygateway-sdk'); // Replace with the actual PayGateway SDK
+
+// Replace these with your actual PayGateway API credentials
+const payGatewayApiKey = 'YOUR_PAYGATEWAY_API_KEY';
+const payGatewayApiSecret = 'YOUR_PAYGATEWAY_API_SECRET';
+
+app.use(express.json());
+
+app.post('/process-payment', async (req, res) => {
+  try {
+    const cardNumber = req.body.cardNumber;
+    const expiryDate = req.body.expiryDate;
+    const cvv = req.body.cvv;
+
+    // Perform server-side validation and security checks on the data
+
+    // Initialize PayGateway SDK with your API credentials
+    const payGatewayClient = new PayGateway.Client(payGatewayApiKey, payGatewayApiSecret);
+
+    // Create a payment request and process the payment
+    const paymentRequest = {
+      cardNumber,
+      expiryDate,
+      cvv,
+      amount: 1000, // Replace with the actual payment amount
+      currency: 'USD', // Replace with the actual currency
+      description: 'Test Payment', // Replace with the actual payment description
+    };
+
+    const paymentResult = await payGatewayClient.processPayment(paymentRequest);
+
+    // Handle the payment result and return it to the client
+    if (paymentResult.success) {
+      // Payment successful
+      return res.json({ success: true });
+    } else {
+      // Payment failed
+      return res.json({ success: false });
+    }
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+Please note that this is just a simplified example, and in a real-world application, you need to consider security measures like validating user inputs, using HTTPS for secure communication, and handling error scenarios more robustly.
+
+Additionally, make sure to replace the fictional PayGateway API credentials and SDK with the real payment gateway API you are integrating. Different payment gateways have their own APIs and SDKs, so you should follow the documentation provided by your selected payment gateway for the specific implementation details.
+
+
+
+
+
